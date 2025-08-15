@@ -1,5 +1,6 @@
 import express from "express";
 import * as llmService from "../services/llm";
+import { saveChatMessage, getChatHistory } from "../services/database.js";
 
 const router = express.Router();
 
@@ -7,6 +8,7 @@ const router = express.Router();
 router.post("/:containerId/messages", async (req, res) => {
   const { containerId } = req.params;
   const { message, attachments = [], stream = false } = req.body;
+  const sessionId = req.headers['session-id'] as string || 'default';
 
   if (!message || typeof message !== "string") {
     return res.status(400).json({
@@ -16,6 +18,15 @@ router.post("/:containerId/messages", async (req, res) => {
   }
 
   try {
+    // Save user message to database
+    await saveChatMessage({
+      containerId,
+      sessionId,
+      role: 'user',
+      content: message,
+      attachments
+    });
+
     if (stream) {
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -28,8 +39,23 @@ router.post("/:containerId/messages", async (req, res) => {
         attachments
       );
 
+      let assistantResponse = '';
       for await (const chunk of messageStream) {
+        if (chunk.type === 'content' && chunk.data?.content) {
+          assistantResponse += chunk.data.content;
+        }
         res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      }
+
+      // Save assistant message to database
+      if (assistantResponse) {
+        await saveChatMessage({
+          containerId,
+          sessionId,
+          role: 'assistant',
+          content: assistantResponse,
+          attachments: []
+        });
       }
 
       res.write("data: [DONE]\n\n");
@@ -40,6 +66,15 @@ router.post("/:containerId/messages", async (req, res) => {
         message,
         attachments
       );
+
+      // Save assistant message to database
+      await saveChatMessage({
+        containerId,
+        sessionId,
+        role: 'assistant',
+        content: assistantMessage.content,
+        attachments: assistantMessage.attachments || []
+      });
 
       res.json({
         success: true,
@@ -70,14 +105,21 @@ router.post("/:containerId/messages", async (req, res) => {
 
 router.get("/:containerId/messages", async (req, res) => {
   const { containerId } = req.params;
+  const sessionId = req.headers['session-id'] as string || 'default';
 
   try {
-    const session = llmService.getOrCreateChatSession(containerId);
+    const messages = await getChatHistory(containerId, sessionId);
 
     res.json({
       success: true,
-      messages: session.messages,
-      sessionId: session.id,
+      messages: messages.map(msg => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        attachments: msg.attachments,
+        timestamp: msg.created_at
+      })),
+      sessionId: sessionId,
     });
   } catch (error) {
     res.status(500).json({

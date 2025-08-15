@@ -8,9 +8,9 @@ export const config = {
     baseUrl: "https://openrouter.ai/api/v1",
 
     // Your API key for provider, if using Ollama enter "ollama" here
-    apiKey: "sk-or-v1-824...",
+    apiKey: "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",
 
     // The model to use, e.g., "gpt-4", "gpt-3.5-turbo", or "ollama/llama2"
-    model: "anthropic/claude-sonnet-4",
+    model: "moonshotai/kimi-k2",
   },
 } as const;

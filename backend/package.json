@@ -3,9 +3,15 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun src/index.ts",
+    "build": "tsc",
+    "start": "bun src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/express": "^5.0.2"
+    "@types/express": "^5.0.2",
+    "@types/pg": "^8.11.0"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -15,6 +21,10 @@
     "dockerode": "^4.0.6",
     "express": "^5.1.0",
     "openai": "^5.0.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5"
   }
 }

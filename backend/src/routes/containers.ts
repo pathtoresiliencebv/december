@@ -9,7 +9,9 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const containers = await dockerService.listProjectContainers();
+    // Get user ID from request (will be implemented with authentication)
+    const userId = req.headers['user-id'] as string;
+    const containers = await dockerService.listProjectContainers(userId);
 
     res.json({
       success: true,
@@ -25,12 +27,14 @@ router.get("/", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   const containerId = uuidv4();
+  const userId = req.headers['user-id'] as string;
 
   try {
     const imageName = await dockerService.buildImage(containerId);
     const { container, port } = await dockerService.createContainer(
       imageName,
-      containerId
+      containerId,
+      userId
     );
 
     res.json({

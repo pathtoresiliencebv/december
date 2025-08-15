@@ -3,6 +3,7 @@ import Docker from "dockerode";
 import fs from "fs/promises";
 import path from "path";
 import { promisify } from "util";
+import { createContainerRecord, updateContainerStatus, deleteContainerRecord } from "./database.js";
 
 const execAsync = promisify(exec);
 const docker = new Docker();
@@ -125,7 +126,8 @@ export async function buildImage(containerId: string): Promise<string> {
 
 export async function createContainer(
   imageName: string,
-  containerId: string
+  containerId: string,
+  userId?: string
 ): Promise<{ container: Docker.Container; port: number }> {
   const containerName = `dec-nextjs-${containerId}`;
   const assignedPort = await findAvailablePort();
@@ -148,6 +150,18 @@ export async function createContainer(
 
   console.log(`Starting container: ${container.id}`);
   await container.start();
+
+  // Save container record to database
+  await createContainerRecord({
+    containerId: container.id,
+    name: containerName,
+    imageName,
+    assignedPort,
+    userId
+  });
+
+  // Update status to running
+  await updateContainerStatus(container.id, 'running', `http://localhost:${assignedPort}`);
 
   return { container, port: assignedPort };
 }
@@ -182,6 +196,9 @@ export async function startContainer(
 
     await container.start();
     console.log(`Started container: ${containerId} on port ${assignedPort}`);
+
+    // Update database status
+    await updateContainerStatus(containerId, 'running', `http://localhost:${assignedPort}`);
 
     return { port: assignedPort };
   } catch (error) {
@@ -226,38 +243,10 @@ export function getContainer(containerId: string): Docker.Container {
 
 export { docker };
 
-export async function listProjectContainers(): Promise<any[]> {
-  const containers = await docker.listContainers({ all: true });
-
-  const projectContainers = containers.filter(
-    (container) =>
-      container.Labels?.project === "december" ||
-      container.Names?.some((name) => name.includes("dec-nextjs-"))
-  );
-
-  return projectContainers.map((container) => {
-    const assignedPort = container.Labels?.assignedPort
-      ? parseInt(container.Labels.assignedPort)
-      : container.Ports?.find((p) => p.PrivatePort === 3000)?.PublicPort ||
-        null;
-
-    return {
-      id: container.Id,
-      name: container.Names?.[0]?.replace("/", ""),
-      status: container.State,
-      image: container.Image,
-      created: new Date(container.Created * 1000).toISOString(),
-      assignedPort,
-      url: assignedPort ? `http://localhost:${assignedPort}` : null,
-      ports:
-        container.Ports?.map((port) => ({
-          private: port.PrivatePort,
-          public: port.PublicPort,
-          type: port.Type,
-        })) || [],
-      labels: container.Labels,
-    };
-  });
+export async function listProjectContainers(userId?: string): Promise<any[]> {
+  // Use database instead of Docker API for better reliability
+  const { getContainers } = await import('./database.js');
+  return await getContainers(userId);
 }
 
 export async function stopContainer(containerId: string): Promise<void> {
@@ -270,6 +259,9 @@ export async function stopContainer(containerId: string): Promise<void> {
 
     await container.stop();
     console.log(`Stopped container: ${containerId}, released port: ${port}`);
+
+    // Update database status
+    await updateContainerStatus(containerId, 'stopped');
   } catch (error) {
     throw new Error(
       `Failed to stop container: ${
@@ -294,6 +286,9 @@ export async function deleteContainer(containerId: string): Promise<void> {
 
     await container.remove({ force: true });
     console.log(`Deleted container: ${containerId}, freed port: ${port}`);
+
+    // Delete from database
+    await deleteContainerRecord(containerId);
 
     const imageName = containerInfo.Config.Image;
     if (imageName && imageName.includes("dec-nextjs-")) {

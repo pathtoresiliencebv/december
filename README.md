@@ -133,3 +133,184 @@ By using December, you agree to indemnify, defend, and hold harmless the develop
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+# December AI Builder
+
+An AI-powered development platform that generates complete applications using Docker containers. December allows you to go from idea to working application in seconds, with full control over your code and API usage.
+
+## 🚀 Quick Start
+
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ntegrals/december
+   cd december
+   ```
+
+2. **Configure AI API**
+   - Get an API key from any OpenAI SDK compatible provider (OpenAI, Claude, Ollama, OpenRouter, etc.)
+   - Update the `config.ts` file with your API key
+   - We recommend using Sonnet-4 from Anthropic for best results
+
+3. **Install Docker**
+   - [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+   - [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+   - [Docker Engine for Linux](https://docs.docker.com/engine/install/)
+
+4. **Start the application**
+   ```bash
+   sh start.sh
+   ```
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:4000
+
+## 🌐 Production Deployment
+
+December can be deployed to production using a hybrid architecture:
+
+- **Frontend**: Vercel (Next.js)
+- **Backend**: Railway (Express.js + Docker)
+- **Database**: PostgreSQL (Railway)
+
+### Quick Deployment
+
+1. **Follow the deployment guide**: [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)
+2. **Set up Railway backend** with PostgreSQL database
+3. **Deploy to Vercel** with environment configuration
+4. **Test the deployment** using the health check endpoints
+
+### Architecture Overview
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │    Backend      │    │   Database      │
+│   (Vercel)      │◄──►│   (Railway)     │◄──►│   (PostgreSQL)  │
+│   Next.js 15    │    │   Express.js    │    │   Metadata      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                              │
+                              ▼
+                       ┌─────────────────┐
+                       │   File Storage  │
+                       │   (Railway)     │
+                       │   Project Files │
+                       └─────────────────┘
+```
+
+## 📚 Documentation
+
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Database Schema](docs/DATABASE_SCHEMA.md)
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
+- [Progress Tracking](docs/PROGRESS.md)
+
+## 🛠️ Features
+
+- **AI-Powered Development**: Generate complete applications with natural language
+- **Docker Integration**: Each project runs in isolated containers
+- **Real-time Chat**: Interactive AI assistant for code generation
+- **Live Preview**: See your applications running instantly
+- **Project Management**: Organize and manage multiple projects
+- **Database Persistence**: Store project metadata and chat history
+- **Production Ready**: Deploy to Railway and Vercel with ease
+
+## 🔧 Technology Stack
+
+### Frontend
+- **Next.js 15**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Monaco Editor**: Code editing experience
+- **Vercel**: Hosting and deployment
+
+### Backend
+- **Express.js**: Node.js web framework
+- **TypeScript**: Type-safe development
+- **Docker**: Container management
+- **PostgreSQL**: Database storage
+- **Railway**: Hosting and deployment
+
+### AI Integration
+- **OpenAI SDK**: AI model integration
+- **OpenRouter**: Multi-provider AI access
+- **Anthropic Claude**: Recommended AI model
+- **Streaming Responses**: Real-time AI interactions
+
+## 💰 Cost Optimization
+
+### Why December is Cost-Effective
+
+- **No Monthly Subscriptions**: Use your own API keys
+- **Pay-per-use**: Only pay for what you use
+- **Local Development**: Free local usage
+- **Production Hosting**: ~$10/month total cost
+- **Full Control**: No vendor lock-in
+
+### Cost Breakdown (Production)
+- **Railway Backend**: $5-10/month
+- **Vercel Frontend**: Free tier available
+- **AI API Usage**: $5-20/month (depending on usage)
+- **Total**: $10-30/month vs $100+/month for similar platforms
+
+## 🔒 Security & Privacy
+
+- **Local-First**: Your code never leaves your machine during development
+- **Database Encryption**: PostgreSQL with SSL connections
+- **CORS Protection**: Secure cross-origin requests
+- **Environment Variables**: Secure API key management
+- **Container Isolation**: Each project runs in isolated Docker containers
+
+## 🚀 Getting Started with AI
+
+### Recommended Setup
+
+1. **Get an OpenRouter API key** (supports multiple providers)
+   - Visit [OpenRouter](https://openrouter.ai)
+   - Create an account and get your API key
+
+2. **Configure for Claude Sonnet-4**
+   ```typescript
+   // config.ts
+   export const config = {
+     aiSdk: {
+       baseUrl: "https://openrouter.ai/api/v1",
+       apiKey: "sk-or-v1-your-api-key",
+       model: "anthropic/claude-sonnet-4",
+     },
+   }
+   ```
+
+3. **Start building**
+   - Create a new project
+   - Describe what you want to build
+   - Watch as December generates your application
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+1. **Fork the repository**
+2. **Create a feature branch**
+3. **Make your changes**
+4. **Test locally**
+5. **Submit a pull request**
+
+## 📄 License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+
+## 📞 Support
+
+- **Email**: j.schoen@mail.com
+- **Twitter**: [@julianschoen](https://twitter.com/julianschoen)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/ntegrals/december/issues)
+
+## ⚠️ Disclaimer
+
+December is an experimental application provided "as-is" without warranty. By using this software, you agree to assume all risks associated with its use. Please monitor your API usage and costs regularly.
+
+---
+
+**Happy Building! 🎉**
